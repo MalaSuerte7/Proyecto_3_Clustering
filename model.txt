@@ -1,0 +1,6 @@
+# Code example
+
+python main.py \
+    feature_type=r21d \
+    video_paths="[./sample/v_GGSY1Qvo990.mp4]" \
+    show_pred=true

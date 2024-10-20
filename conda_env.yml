@@ -1,0 +1,7 @@
+# yml como para estandarizar, que funcione en todas las maquinas.
+name: p3_video_features
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+
