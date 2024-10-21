@@ -1,0 +1,10 @@
+(1) Set up para el funcionamiento
+
+(1.1) Necesitamos conda para instalar el video features (2+1)
+(1.2) Insatalamos video features
+
+(2) Pasos para los datos
+
+(2.1) Recordar los datos a un subdataset de los unicos links que tienen subset_10. 
+      Eso, para filtrar a solo los videos que vamos a usar.
+(2.2) 
