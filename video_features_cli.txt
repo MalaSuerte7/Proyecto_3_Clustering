@@ -6,5 +6,5 @@ python main.py `
     show_pred=false `
     device=cuda `
     on_extraction=save_numpy `
-    file_with_video_paths=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\answer.txt`
-    output_path=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\ans
+    file_with_video_paths=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\val_paths.txt`
+    output_path=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\features_response

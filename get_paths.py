@@ -1,8 +1,5 @@
 import os 
 
-out = "C:\\Users\\lifeg\\OneDrive\\Escritorio\\Machine\\Proyecto_3_Clustering\\answer.txt"
-videos_folder_choice = "C:\\Users\\lifeg\\OneDrive\\Escritorio\\Machine\\Proyecto_3_Clustering\\testing_videos"
-
 def getPaths(videos_folder, valido = ['mp4']):
     paths = []
     # sabiendo que la captera tiene puros videos
@@ -21,5 +18,11 @@ def pegar_txt(paths , output_txt):
         for path in paths:
             file.write(path + '\n')
 
-allpaths = getPaths(videos_folder_choice)
-pegar_txt(allpaths, out)
+
+# val_features --> paths
+# path --> C:\Users\lifeg\OneDrive\Escritorio\heavy_data\val_subset
+val_videos = "C:\\Users\\lifeg\\OneDrive\\Escritorio\\heavy_data\\val_subset"
+out_val = "C:\\Users\\lifeg\\OneDrive\\Escritorio\\Machine\\Proyecto_3_Clustering\\val_paths.txt"
+## quizas también sin necesidad de ponerlo en un txt se podía hacer pero para visualizarlo mejor que se escriba.
+allpaths_val = getPaths(val_videos)
+pegar_txt(allpaths_val, out_val)
