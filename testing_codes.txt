@@ -1,0 +1,10 @@
+- El código normal tiene problemas con el \ porque powershell no lo reconoce
+cd video_features
+
+python main.py `
+    feature_type=r21d `
+    show_pred=false `
+    device=cuda `
+    on_extraction=save_numpy `
+    video_paths=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\Eylvz04H2WQ_000034_000044.mp4 `
+    output_path=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\TEST
