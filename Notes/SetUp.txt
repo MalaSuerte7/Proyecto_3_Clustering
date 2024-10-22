@@ -7,4 +7,5 @@
 
 (2.1) Recordar los datos a un subdataset de los unicos links que tienen subset_10. 
       Eso, para filtrar a solo los videos que vamos a usar.
-(2.2) 
+
+(3) Análisis de los datos
