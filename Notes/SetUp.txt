@@ -9,3 +9,13 @@
       Eso, para filtrar a solo los videos que vamos a usar.
 
 (3) Análisis de los datos
+
+(3.1) Para realizar el análisis de datos primero debemos obtener los resultados de "video_features".
+
+--------
+Estructura
+- Notas
+- recortar_datos (aquí eliminamos videos queno vayamos a usar para ocupar menos espacio en vano)
+- read_process (aquí obtendremos los features)
+- data_normalizer (compactaremos los datos de los csv para hacer un txt de puros paths que pueda ponerse
+                  como parametro en --parece que video_paths no acepta solo una llena de videos--) 
