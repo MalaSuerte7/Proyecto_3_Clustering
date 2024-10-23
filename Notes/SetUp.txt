@@ -15,6 +15,10 @@
 --------
 Estructura
 - Notas
+- video_features (es un link a otro github, cuando se hace clone de mi repo aparece como carpeta vacia
+                  por lo que cada uno lo tiene que clonear independientemente 
+                  https://github.com/v-iashin/video_features.git)
+                  - I0luMKjIZyg de val es un video nulo. 
 - recortar_datos (aquí eliminamos videos queno vayamos a usar para ocupar menos espacio en vano)
 - read_process (aquí obtendremos los features)
 - data_normalizer (compactaremos los datos de los csv para hacer un txt de puros paths que pueda ponerse
