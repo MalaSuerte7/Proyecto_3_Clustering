@@ -23,3 +23,10 @@ Estructura
 - read_process (aquí obtendremos los features)
 - data_normalizer (compactaremos los datos de los csv para hacer un txt de puros paths que pueda ponerse
                   como parametro en --parece que video_paths no acepta solo una llena de videos--) 
+
+--------
+Choices justify:
+- Video features porque ofrece varios modelos, en especial R(2+1)D el que usaremos por tener un enfoque más útil para nuestro proyecto. 
+  así mismo no usamos semegantes como CLIP o S3D porque CLIP era muy pesado y entre S3D y R(2+1)D, preferimos R(2+1)D por su modelo 
+  r2plus1d_34_32_ig65m_ft_kinetics que tiene un 79.10 de accuracy a comparación del de por default en R(2+1)D. 
+- umap
