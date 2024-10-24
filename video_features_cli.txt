@@ -29,4 +29,12 @@ python main.py `
     output_path=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\features_response
 
 
+python main.py `
+    feature_type=r21d `
+    model_name="r2plus1d_34_32_ig65m_ft_kinetics" `
+    show_pred=false `
+    device=cuda `
+    on_extraction=save_numpy `
+    file_with_video_paths=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\train_paths_p1.txt`
+    output_path=C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\features_response
  
