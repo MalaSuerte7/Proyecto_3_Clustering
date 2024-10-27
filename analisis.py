@@ -5,8 +5,8 @@ from sklearn.preprocessing import StandardScaler
 import umap
 
 # 1 Leer features 
-#test_features = "features_response\\train_features\\r21d\\r2plus1d_34_32_ig65m_ft_kinetics"
-test_features = "Act"
+test_features = "features_response\\train_features\\r21d\\r2plus1d_34_32_ig65m_ft_kinetics"
+# test_features = "Act"
 features_test = glob.glob(f"{test_features}/*.npy")
 # 1.1 Leídos listos para mostrar
 show_f_test = [np.load(npy_file) for npy_file in features_test] 
@@ -51,13 +51,18 @@ f_test = np.array(features_med)
 
 # 3 Scalar
 scaler = StandardScaler()
-features_scaled = scaler.fit_transform(f_test[:, 2:].astype(float)) 
+features_scaled = scaler.fit_transform(f_test.astype(float))
 
 # 4 Umaping
 n_neighbors = min(15, features_scaled.shape[0] - 1)  # Ajuste dinámico
 reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=2)
 features_umap = reducer.fit_transform(features_scaled)
 
-# 5 Exportar para analisar y graficar
-output_file = "features_umap1.npy"
-np.save(output_file, features_umap)
+# 5 Preparar datos de salida con youtube_id, label, UMAP feature 1 y UMAP feature 2
+youtube_ids = np.array(youtube_ids).reshape(-1, 1)
+labels = np.array(labels).reshape(-1, 1)
+output_data = np.hstack((youtube_ids, labels, features_umap))
+
+# 6 Guardar en un archivo .npy
+output_file = "features_umap2.npy"
+np.save(output_file, output_data)
