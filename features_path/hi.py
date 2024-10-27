@@ -1,3 +1,4 @@
+#ChatGPT code to make stops
 import os
 
 # Ruta de la carpeta donde están los archivos .npy
