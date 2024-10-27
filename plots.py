@@ -5,7 +5,6 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 
 
-
 # Cargar las características UMAP desde el archivo
 features_umap = np.load(r"C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\features_umap.npy")
 

@@ -11,6 +11,8 @@
 (3) Análisis de los datos
 
 (3.1) Para realizar el análisis de datos primero debemos obtener los resultados de "video_features".
+(3.2) Ahora tenemos que estandarizarlo y hacerle una reducción ( etiquetar falta)
+(3.3) Analisar 
 
 --------
 Estructura
