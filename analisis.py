@@ -61,8 +61,11 @@ features_umap = reducer.fit_transform(features_scaled)
 # 5 Preparar datos de salida con youtube_id, label, UMAP feature 1 y UMAP feature 2
 youtube_ids = np.array(youtube_ids).reshape(-1, 1)
 labels = np.array(labels).reshape(-1, 1)
-output_data = np.hstack((youtube_ids, labels, features_umap))
+output_data_label = np.hstack((youtube_ids, labels, features_umap))
+output_data_no_label = features_umap
 
-# 6 Guardar en un archivo .npy
-output_file = "features_umap2.npy"
-np.save(output_file, output_data)
+# 6 Guardar ambos archivos .npy
+output_file_with_label = "features_umap_label.npy"
+output_file_no_label = "features_umap_noLabel.npy"
+np.save(output_file_with_label, output_data_label)
+np.save(output_file_no_label, output_data_no_label)

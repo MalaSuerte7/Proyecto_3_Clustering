@@ -32,3 +32,11 @@ Choices justify:
   así mismo no usamos semegantes como CLIP o S3D porque CLIP era muy pesado y entre S3D y R(2+1)D, preferimos R(2+1)D por su modelo 
   r2plus1d_34_32_ig65m_ft_kinetics que tiene un 79.10 de accuracy a comparación del de por default en R(2+1)D. 
 - umap
+- kmeans y kmeans++ 
+  """
+  ‘k-means++’ : selects initial cluster centroids using sampling based on an empirical probability distribution of the points’ 
+  contribution to the overall inertia. This technique speeds up convergence. The algorithm implemented is “greedy k-means++”. It differs 
+  from the vanilla k-means++ by making several trials at each sampling step and choosing the best centroid among them.
+  """
+  Problema: Kmeans podría llegar a seleccionar 3 puntos demasiado cercanos.
+  Me lo pregunte porque por la data que pasa si tengo más datos en un cluster y por probabilidades me sale en ese lugar los 3. No pues.
