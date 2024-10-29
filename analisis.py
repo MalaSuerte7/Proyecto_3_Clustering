@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
 import glob
-from sklearn.preprocessing import StandardScaler
-import umap
+from sklearn.preprocessing import StandardScaler # type: ignore
+from sklearn.manifold import TSNE # type: ignore
+import umap # type: ignore
 
 # 1 Leer features 
 test_features = "features_response\\train_features\\r21d\\r2plus1d_34_32_ig65m_ft_kinetics"
-# test_features = "Act"
 features_test = glob.glob(f"{test_features}/*.npy")
 # 1.1 Leídos listos para mostrar
 show_f_test = [np.load(npy_file) for npy_file in features_test] 
@@ -51,21 +51,57 @@ f_test = np.array(features_med)
 
 # 3 Scalar
 scaler = StandardScaler()
-features_scaled = scaler.fit_transform(f_test.astype(float))
+features_scaled = scaler.fit_transform(f_test.astype(float)) # Es el X
 
-# 4 Umaping
-n_neighbors = min(15, features_scaled.shape[0] - 1)  # Ajuste dinámico
+# 4 Metodos
+# 4.1 Umaping
+n_neighbors = min(10, features_scaled.shape[0] - 1) 
 reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=2)
-features_umap = reducer.fit_transform(features_scaled)
+X_umap = reducer.fit_transform(features_scaled)
 
+# 4.2 T-SNE
+tsne = TSNE(n_components=2, random_state=42)
+X_tsne = tsne.fit_transform(features_scaled) 
+ 
+# ------------------------------------------------------------------------------------
 # 5 Preparar datos de salida con youtube_id, label, UMAP feature 1 y UMAP feature 2
 youtube_ids = np.array(youtube_ids).reshape(-1, 1)
 labels = np.array(labels).reshape(-1, 1)
-output_data_label = np.hstack((youtube_ids, labels, features_umap))
-output_data_no_label = features_umap
+# 5.1 El npy de umap esta con y sin label
+output_data_umapL = np.hstack((youtube_ids, labels, X_umap))
+output_data_umap = X_umap
+# 5.2 El npy de tsne 
+output_data_tsneL = np.hstack((youtube_ids, labels, X_tsne))
+output_data_tsne = X_tsne
+# ------------------------------------------------------------------------------------
 
 # 6 Guardar ambos archivos .npy
-output_file_with_label = "features_umap_label.npy"
-output_file_no_label = "features_umap_noLabel.npy"
-np.save(output_file_with_label, output_data_label)
-np.save(output_file_no_label, output_data_no_label)
+# 6.1 Umap
+# 6.1.1 Numpys
+npy_umapL = "npy_umapL.npy"
+npy_umap = "npy_umap.npy"
+np.save(npy_umapL, output_data_umapL)
+np.save(npy_umap, output_data_umap)
+# 6.1.1 Pickels
+import pickle
+
+with open("umap_reducer.pkl", "wb") as f:
+    pickle.dump(reducer, f)
+
+# 6.1 Tsne
+npy_tsneL = "npy_tsneL.npy"
+npy_tsne = "npy_tsne.npy"
+np.save(npy_tsneL, output_data_tsneL)
+np.save(npy_tsne, output_data_tsne)
+
+# 7 Plot
+# 7.1 Umap plot
+# import umap.plot  #type: ignore
+# import matplotlib.pyplot as plt #type: ignore
+
+# umap.plot.points(reducer)
+# plt.show()
+
+# 7.2 Tsne plot
+
+
