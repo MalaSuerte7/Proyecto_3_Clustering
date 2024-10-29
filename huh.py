@@ -1,43 +1,32 @@
 import numpy as np
+import pandas as pd
 from kmeans import kmeans_pp
-import sklearn.datasets as datasets
-import matplotlib.pyplot as plt
-from sklearn.metrics import silhouette_score, adjusted_rand_score, adjusted_mutual_info_score
+from sklearn.metrics import silhouette_score, adjusted_rand_score, mutual_info_score # type: ignore
 
-# Load your data
-features_path = r"C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\features_umap_noLabel.npy"
-labels_path = r"C:\Users\lifeg\OneDrive\Escritorio\Machine\Proyecto_3_Clustering\features_umap_label.npy"
 
-data = np.load(features_path)
-labels_data = np.load(labels_path)
+features_path = "C:\\Users\\lifeg\\OneDrive\\Escritorio\\Machine\\Proyecto_3_Clustering\\features_umap_noLabel.npy"
+labels_path = "C:\\Users\\lifeg\\OneDrive\\Escritorio\\Machine\\Proyecto_3_Clustering\\features_umap_label.npy"
 
-# Extraer etiquetas de features_umap_label
-labels = labels_data[:, 1]  # Columna de etiquetas
+points = np.load(features_path)
+l_points = np.load(labels_path)
 
-# Generate synthetic data based on the loaded centers
-X, _ = datasets.make_blobs(n_samples=5409, centers=data, cluster_std=1, random_state=0)
+l_points_pd = pd.DataFrame(l_points)
+# print(l_points_pd.head())
+l_points_filtered = l_points_pd.iloc[:, 1:4] 
+# print(l_points_filtered.head())
 
-# Initialize and fit kmeans++ model
-kmeans = kmeans_pp(X, k=4)
-kmeans.fit()
+# Kmean++ -----------------------------------------------------------
+k_m = kmeans_pp(points, k=10)
+k_m.fit()
+# Silhuete ----------------------------------------------------------
+sil_grade = silhouette_score(X= points, labels=k_m.assignment)
+print(sil_grade)
 
-# Plot the clusters
-fig, ax = plt.subplots()
-ax.scatter(X[:, 0], X[:, 1], c=kmeans.assignment)
-plt.show()
+# Rand Index (RI) ---------------------------------------------------
+labels_true = l_points_pd[1].values
+ri = adjusted_rand_score(labels_true=labels_true, labels_pred=k_m.assignment)
+print(ri)
 
-# Calculate metrics
-sil_score = silhouette_score(X, kmeans.assignment)
-rand_index = adjusted_rand_score(_, kmeans.assignment)
-mutual_info = adjusted_mutual_info_score(_, kmeans.assignment)
-
-# Print metrics
-print("Silhouette Score:", sil_score)
-print("Adjusted Rand Index (RI):", rand_index)
-print("Adjusted Mutual Information (MI):", mutual_info)
-
-# Graficar los clusters
-fig, ax = plt.subplots()
-scatter = ax.scatter(data[:, 0], data[:, 1], c=kmeans.assignment, cmap='viridis')
-plt.colorbar(scatter, ax=ax)
-plt.show()
+# Mutual Information (MI) -------------------------------------------
+mi = mutual_info_score(labels_true=labels_true, labels_pred=k_m.assignment)
+print(mi)
