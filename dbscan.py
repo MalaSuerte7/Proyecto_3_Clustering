@@ -1,89 +1,92 @@
 import numpy as np
-import math
+from sklearn.neighbors import NearestNeighbors #type: ignore
+#Usamos NearestNeighbors para la optimización de DBS
 
 class DBSCAN:
-    UNCLASSIFIED = -1
-    NOISE = None
-
-    def __init__(self, data, eps=0.5, min_points=2):
-        self.data = data
+    def __init__(self, eps=0.5, min_samples=5): #standar
         self.eps = eps
-        self.min_points = min_points
-        self.labels = [self.UNCLASSIFIED] * len(data)
-    
-    # Calcula la distancia euclidiana
-    def euclidean_dist(self, p, q):
-        return math.sqrt(np.power(p - q, 2).sum())
+        self.min_samples = min_samples
+        self.labels_ = None
+        self.cs_indices = None
+        self.components = None
 
-    # Verifica si un punto está dentro del radio eps
-    def eps_neighborhood(self, p, q):
-        return self.euclidean_dist(p, q) < self.eps
+    def _expand_cluster(self, X, neighborhoods, labels, index, cluster_id, core_samples):
+        """
+        Expande un cluster dado un punto núcleo inicial.
+        """
+        labels[index] = cluster_id
+        queue = list(neighborhoods[index])
 
-    # Encuentra los vecinos dentro de la distancia eps
-    def region_query(self, point_id):
-        neighbors = []
-        for i in range(len(self.data)):
-            if self.eps_neighborhood(self.data[point_id], self.data[i]):
-                neighbors.append(i)
-        return neighbors
-
-    # Expande el cluster desde un punto dado
-    def expand_cluster(self, point_id, cluster_id):
-        # Encuentra los vecinos iniciales de point_id
-        seeds = self.region_query(point_id)
-        
-        # Verifica si el punto es ruido (no cumple con min_points)
-        if len(seeds) < self.min_points:
-            self.labels[point_id] = self.NOISE
-            return False
-        else:
-            # Asigna el cluster_id al punto y a sus vecinos iniciales
-            self.labels[point_id] = cluster_id
-            for seed_id in seeds:
-                self.labels[seed_id] = cluster_id
+        while queue:
+            point = queue.pop(0)
+            if labels[point] == -1:  # Cambia puntos de ruido a borde
+                labels[point] = cluster_id
+            elif labels[point] != -1:
+                continue
             
-            # Expande el cluster usando la lista de semillas
-            i = 0
-            while i < len(seeds):
-                current_point = seeds[i]
-                results = self.region_query(current_point)
-                
-                # Si current_point es un punto central, expandimos el cluster
-                if len(results) >= self.min_points:
-                    for result_point in results:
-                        if self.labels[result_point] in [self.UNCLASSIFIED, self.NOISE]:
-                            if self.labels[result_point] == self.UNCLASSIFIED:
-                                seeds.append(result_point)
-                            self.labels[result_point] = cluster_id
-                i += 1
-            return True
-    
-    # Método principal de DBSCAN para ajustar el modelo
-    def fit(self):
-        cluster_id = 1
-        for point_id in range(len(self.data)):
-            # Si el punto no está clasificado, intenta expandir un nuevo cluster
-            if self.labels[point_id] == self.UNCLASSIFIED:
-                if self.expand_cluster(point_id, cluster_id):
-                    cluster_id += 1
-        return self.labels
+            labels[point] = cluster_id
+            if core_samples[point]:  # Solo expandir desde puntos núcleo
+                queue.extend(neighborhoods[point])
 
-    # Predice el cluster de nuevos puntos de datos (opcional)
-    def predict(self, new_data):
-        predictions = []
-        for point in new_data:
-            distances = [self.euclidean_dist(point, self.data[center_id]) for center_id, label in enumerate(self.labels) if label not in [self.NOISE, self.UNCLASSIFIED]]
-            closest_cluster = self.labels[np.argmin(distances)]
-            predictions.append(closest_cluster if closest_cluster is not self.NOISE else self.NOISE)
-        return predictions
+    # ------------------------------------------------------------------------------------------
+    def fit(self, X, weight=None):
+        # X data, weight = weight -\_(^.^)_/-
+        neighbors = NearestNeighbors(radius=self.eps)
+        neighbors.fit(X)
+        neighborhood = neighbors.radius_neighbors(X, return_distance=False)
 
-# # Ejemplo de prueba (opcional)
-# def test_dbscan():
-#     data = np.array([[1, 1.1], [1.2, 0.8], [0.8, 1], [3.7, 4], [3.9, 3.9], [3.6, 4.1], [10, 10]])
-#     model = DBSCAN(data, eps=0.5, min_points=2)
-#     print("Etiquetas de cluster:", model.fit())
+        # Neighbors
+        if weight is None:
+            n_neighbors = np.array([len(neighbors) for neighbors in neighborhood])
+        else:
+            n_neighbors = np.array([np.sum(neighborhood[neighbors]) for neighbors in weight])
 
-# test_dbscan()
+        # Noise -1 |-| determinar nucleos
+        labels = np.full(X.shape[0], -1, dtype=int)
+        core_samples = n_neighbors >= self.min_samples
+
+        # Asignar clusters
+        cluster_id = 0
+        for i in range(X.shape[0]):
+            if not core_samples[i] or labels[i] != -1:
+                continue  # Omitir si no es un punto núcleo o ya etiquetado
+            self._expand_cluster(X, neighborhood, labels, i, cluster_id, core_samples)
+            cluster_id += 1
+
+        # Guardar resultados
+        self.core_sample_indices_ = np.where(core_samples)[0]
+        self.labels_ = labels
+        self.components_ = X[self.core_sample_indices_].copy()
+        return self
+
+    def predict(self, X_new):
+        """
+        Asigna etiquetas de cluster a nuevos puntos según su vecindad.
+        
+        Parámetros
+        ----------
+        X_new : array-like, forma (n_samples, n_features)
+            Nuevas instancias para etiquetar.
+        
+        Retorna
+        -------
+        labels_new : array de etiquetas de cluster para X_new
+        """
+        labels_new = []
+        for point in X_new:
+            label = -1  
+            for cluster_id, core_point in enumerate(self.components_):
+                if np.linalg.norm(point - core_point) <= self.eps:
+                    label = self.labels_[self.core_sample_indices_[cluster_id]]
+                    break
+            labels_new.append(label)
+        return np.array(labels_new)
+
+    def fit_predict(self, X, weight=None):
+        self.fit(X, weight)  # Llama a fit para realizar el clustering
+        return self.labels_  # Retorna las etiquetas generadas
+
+
 
 # Inpirado de https://scrunts23.medium.com/dbscan-algorithm-from-scratch-in-python-475b82e0571c
 # y de https://github.com/choffstein/dbscan/blob/master/dbscan/dbscan.py

@@ -36,7 +36,7 @@ def process_features(features_path, csv_path=None, scaler=None, reducer=None, ap
     else:
         features_scaled = scaler.transform(features_array.astype(float))
 
-    # UMAP y t-SNE
+    # UMAP y t-SNE -- posible un LDA o un PCA
     umap_data, tsne_data = None, None
     if apply_umap:
         if reducer is None:
