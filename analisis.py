@@ -1,107 +1,86 @@
 import numpy as np
 import pandas as pd
 import glob
-from sklearn.preprocessing import StandardScaler # type: ignore
-from sklearn.manifold import TSNE # type: ignore
-import umap # type: ignore
-
-# 1 Leer features 
-test_features = "features_response\\train_features\\r21d\\r2plus1d_34_32_ig65m_ft_kinetics"
-features_test = glob.glob(f"{test_features}/*.npy")
-# 1.1 Leídos listos para mostrar
-show_f_test = [np.load(npy_file) for npy_file in features_test] 
-# 1.2 CSV con labels
-csv_df = pd.read_csv("csv\\train_subset_10.csv") 
-
-# 2 ERROR dimensional ---- Solución  
-# 2.1 Analisando problemas de dimensionalidad
-# for i, show_f_test in enumerate(show_f_test):
-#     print(f"Matriz {i} forma: {show_f_test.shape}")
-
-# 2.2 Tienen distintas filas, por lo que mejor redimensionar
-# 2.3 Haremos un promedio para tener todas las filas [1,512]
-features_med = []
-youtube_ids = []
-labels = []
-
-for i, actual_feature in enumerate(show_f_test):
-    if actual_feature.size == 0:
-        continue
-    
-    # 2.3.1 youtube_id
-    file = features_test[i]
-    youtube_id = file.split("\\")[-1].split("_")[0] 
-    # 2.3.2 label
-    label_chance = csv_df[csv_df['youtube_id'] == youtube_id]
-    if label_chance.empty:
-        continue
-    label = label_chance['label'].values[0]
-
-    # 2.3.3 Promediar 
-    mean_row = np.mean(actual_feature, axis=0)
-    features_med.append(mean_row)
-    youtube_ids.append(youtube_id)
-    labels.append(label)
-
-f_test = np.array(features_med)
-
-# 2.5 Verificar solución   
-# for i, f_test in enumerate(f_test):
-#     print(f"Matriz {i} forma: {f_test.shape}")
-
-# 3 Scalar
-scaler = StandardScaler()
-features_scaled = scaler.fit_transform(f_test.astype(float)) # Es el X
-
-# 4 Metodos
-# 4.1 Umaping
-n_neighbors = min(10, features_scaled.shape[0] - 1) 
-reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=2)
-X_umap = reducer.fit_transform(features_scaled)
-
-# 4.2 T-SNE
-tsne = TSNE(n_components=2, random_state=42)
-X_tsne = tsne.fit_transform(features_scaled) 
- 
-# ------------------------------------------------------------------------------------
-# 5 Preparar datos de salida con youtube_id, label, UMAP feature 1 y UMAP feature 2
-youtube_ids = np.array(youtube_ids).reshape(-1, 1)
-labels = np.array(labels).reshape(-1, 1)
-# 5.1 El npy de umap esta con y sin label
-output_data_umapL = np.hstack((youtube_ids, labels, X_umap))
-output_data_umap = X_umap
-# 5.2 El npy de tsne 
-output_data_tsneL = np.hstack((youtube_ids, labels, X_tsne))
-output_data_tsne = X_tsne
-# ------------------------------------------------------------------------------------
-
-# 6 Guardar ambos archivos .npy
-# 6.1 Umap
-# 6.1.1 Numpys
-npy_umapL = "npy_umapL.npy"
-npy_umap = "npy_umap.npy"
-np.save(npy_umapL, output_data_umapL)
-np.save(npy_umap, output_data_umap)
-# 6.1.1 Pickels
+from sklearn.preprocessing import StandardScaler #type: ignore
+from sklearn.manifold import TSNE #type: ignore
+import umap #type: ignore
 import pickle
 
+def process_features(features_path, csv_path=None, scaler=None, reducer=None, apply_umap=True, apply_tsne=True):
+    features_files = glob.glob(f"{features_path}/*.npy")
+    show_f = [np.load(npy_file) for npy_file in features_files]
+    features_med, youtube_ids, labels = [], [], []
+
+    # Etiquetas (test no tenia)
+    for i, feature in enumerate(show_f):
+        if feature.size == 0:
+            continue
+        mean_row = np.mean(feature, axis=0)
+        features_med.append(mean_row)
+        youtube_id = features_files[i].split("\\")[-1].split("_")[0]
+        youtube_ids.append(youtube_id)
+        
+        # Obtener etiquetas solo si hay CSV proporcionado
+        if csv_path:
+            csv_df = pd.read_csv(csv_path)
+            label_row = csv_df[csv_df['youtube_id'] == youtube_id]
+            label = label_row['label'].values[0] if not label_row.empty else None
+            labels.append(label)
+
+    features_array = np.array(features_med)
+    
+    # Escalar las características (entrenamiento ajusta un nuevo scaler)
+    if scaler is None:
+        scaler = StandardScaler()
+        features_scaled = scaler.fit_transform(features_array.astype(float))
+    else:
+        features_scaled = scaler.transform(features_array.astype(float))
+
+    # UMAP y t-SNE
+    umap_data, tsne_data = None, None
+    if apply_umap:
+        if reducer is None:
+            n_neighbors = min(10, features_scaled.shape[0] - 1)
+            reducer = umap.UMAP(n_neighbors=n_neighbors, n_components=2)
+            umap_data = reducer.fit_transform(features_scaled)
+        else:
+            umap_data = reducer.transform(features_scaled)
+
+    if apply_tsne:
+        tsne = TSNE(n_components=2, random_state=42)
+        tsne_data = tsne.fit_transform(features_scaled)
+
+    # Casi listo para exportar
+    youtube_ids_array = np.array(youtube_ids).reshape(-1, 1)
+    labels_array = np.array(labels).reshape(-1, 1) if labels else None
+
+    # Salidas
+    umap_output = np.hstack((youtube_ids_array, labels_array, umap_data)) if labels else np.hstack((youtube_ids_array, umap_data))
+    tsne_output = np.hstack((youtube_ids_array, labels_array, tsne_data)) if labels else np.hstack((youtube_ids_array, tsne_data))
+
+    return umap_output, tsne_output, scaler, reducer
+
+# 6 Guardar archivos para entrenamiento y prueba
+
+# Procesar y guardar datos de entrenamiento
+umap_train, tsne_train, scaler, reducer = process_features(
+    features_path="features_response\\train_features\\r21d\\r2plus1d_34_32_ig65m_ft_kinetics",
+    csv_path="csv\\train_subset_10.csv"
+)
+np.save("npy_umapL.npy", umap_train)
+np.save("npy_tsneL.npy", tsne_train)
+
+# Guardar el scaler y el reducer de UMAP
+with open("scaler.pkl", "wb") as f:
+    pickle.dump(scaler, f)
 with open("umap_reducer.pkl", "wb") as f:
     pickle.dump(reducer, f)
 
-# 6.1 Tsne
-npy_tsneL = "npy_tsneL.npy"
-npy_tsne = "npy_tsne.npy"
-np.save(npy_tsneL, output_data_tsneL)
-np.save(npy_tsne, output_data_tsne)
-
-# 7 Plot
-# 7.1 Umap plot
-# import umap.plot  #type: ignore
-# import matplotlib.pyplot as plt #type: ignore
-
-# umap.plot.points(reducer)
-# plt.show()
-
-# 7.2 Tsne plot
-
-
+# Procesar y guardar datos de prueba
+umap_test, tsne_test, _, _ = process_features(
+    features_path="features_response\\test_features\\r21d\\r2plus1d_34_32_ig65m_ft_kinetics",
+    scaler=scaler,
+    reducer=reducer
+)
+np.save("npy_umap_test.npy", umap_test)
+np.save("npy_tsne_test.npy", tsne_test)

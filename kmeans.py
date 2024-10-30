@@ -42,7 +42,7 @@ class kmeans_pp:
                     if t_dist < euclidean_dist:
                         self.assignment[i] = j
                         euclidean_dist = t_dist
-    # ? ------------------------------------------------------------------------------------
+    # snap ------------------------------------------------------------------------------------
     def snap(self, centers):
         self.history.append(np.copy(centers))
     # Acompañando al kmeans++ se encarga de hacer los centroides ---------------------------
@@ -75,8 +75,18 @@ class kmeans_pp:
             self.snap(centers)
             new_centers = self.centers_maker()
     # Predict ------------------------------------------------------------------------------
-    def predict(self):
-        return self.assignment
+    def predict(self, test_data):
+        pred =[]
+        for point in test_data:
+            dist_min = float('inf')
+            clusters_signados = -1
+            for j in  range(self.k):
+                dist = self.euclidean_dist(point, self.history[-1][j])
+                if dist < dist_min:
+                    dist_min = dist
+                    assigned_cluster = j
+            pred.append(assigned_cluster)
+        return pred
 
 #Inspirado de https://medium.com/@gallettilance/kmeans-from-scratch-24be6bee8021
 #al modelo le falta predict implementar snap()
